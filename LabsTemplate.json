@@ -43,7 +43,11 @@
       },
       "clusterVersion": {
         "type": "string",
-        "defaultValue": "3.5",
+        "defaultValue": "3.6",
+        "allowedValues": [
+            "3.5",
+            "3.6"
+        ],
         "metadata": {
           "description": "HDInsight cluster version."
         }
@@ -64,9 +68,13 @@
       },
       "sparkVersion": {
         "type": "string",
-        "defaultValue": "2.0",
+        "defaultValue": "2.1",
+        "allowedValues": [
+            "2.0",
+            "2.1"
+        ],
         "metadata": {
-            "description": "Spark component version."
+            "description": "Spark component version. Use 2.0 if the clusterVersion selected is 3.5, and 2.1 with 3.6"
         }
       },
       "sshUserName": {
