@@ -43,7 +43,7 @@
       },
       "clusterVersion": {
         "type": "string",
-        "defaultValue": "3.6",
+        "defaultValue": "3.5",
         "metadata": {
           "description": "HDInsight cluster version."
         }
@@ -60,6 +60,13 @@
         "defaultValue": "SPARK",
         "metadata": {
           "description": "The type of the HDInsight cluster to create."
+        }
+      },
+      "sparkVersion": {
+        "type": "string",
+        "defaultValue": "2.0",
+        "metadata": {
+            "description": "Spark component version."
         }
       },
       "sshUserName": {
@@ -109,7 +116,7 @@
           "clusterDefinition": {
             "kind": "[parameters('clusterKind')]",
             "componentVersion": {
-                "Spark": "2.0"
+                "Spark": "[parameters('sparkVersion')]"
             },
             "configurations": {
               "gateway": {
