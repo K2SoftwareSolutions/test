@@ -1,0 +1,9 @@
+### HDInsight Spark Cluster Template
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FK2SoftwareSolutions%2Ftest%2Fmaster%2FTemplate-SparkCluster.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+### HDInsight Kafka & Spark Clusters in Vnet Template
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FK2SoftwareSolutions%2Ftest%2Fmaster%2FTemplate-KafkaSparkClusterInVnet.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
