@@ -2,14 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "appName": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 10,
-            "metadata": {
-                "description": "This should be a short (10 or fewer characters), but unique string that will be a prefix to all of the resources deployed. For example, if you type in smithcis, your Lab VM will be called smithcislab. DO NOT INCLUDE ANY SPECIAL CHARACTERS SUCH AS DASHES, UNDERSCORES, ETC."
-            }
-        },
         "labVmUserName": {
             "type": "string",
             "defaultValue": "demouser",
@@ -26,19 +18,13 @@
         }
     },
   "variables": {
-    "cleanAppName": "[replace(replace(replace(toLower(parameters('appName')), '-', ''), '_', ''), '.', '')]",
+    "cleanAppName": "contosodevtestlabs",
     "vmStorageAccountName": "[concat(variables('cleanAppName'), 'vmstorage')]",
-    "nicName": "[concat(variables('cleanAppName'), 'nic')]",
-    "publicIPAddressName": "[concat(variables('cleanAppName'), 'publicip')]",
     "labVmName": "[concat(variables('cleanAppName'), 'lab')]",
     "networkingApiVersion": "2015-06-15",
     "OSDiskName": "labvmosdisk",
     "vmOsVersion": "2016-Datacenter",
     "vmSize": "Standard_DS2_v2",
-    "labVmVNetName": "[concat(variables('cleanAppName'),'-vnet')]",
-    "labVmVNetSubnetName": "default",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('labVmVNetName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('labVmVNetSubnetName'))]",
     "publicIPAddressType": "Dynamic",
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
@@ -76,38 +62,12 @@
         }
     },
     {
-        "name": "[variables('nicName')]",
-        "type": "Microsoft.Network/networkInterfaces",
-        "location": "[resourceGroup().location]",
-        "apiVersion": "[variables('networkingApiVersion')]",
-        "dependsOn": [
-            "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
-        ],
-        "properties": {
-            "ipConfigurations": [
-                {
-                    "name": "ipconfig1",
-                    "properties": {
-                        "privateIPAllocationMethod": "Dynamic",
-                        "publicIPAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
-                        },
-                        "subnet": {
-                            "id": "[variables('subnetRef')]"
-                        }
-                    }
-                }
-            ]
-        }
-    },
-    {
         "name": "[variables('labVmName')]",
         "type": "Microsoft.Compute/virtualMachines",
         "location": "[resourceGroup().location]",
         "apiVersion": "[variables('vmApiVersion')]",
         "dependsOn": [
-            "[concat('Microsoft.Storage/storageAccounts/', variables('vmStorageAccountName'))]",
-            "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            "[concat('Microsoft.Storage/storageAccounts/', variables('vmStorageAccountName'))]"
         ],
         "properties": {
             "hardwareProfile": {
@@ -136,46 +96,8 @@
                     "caching": "ReadWrite",
                     "createOption": "FromImage"
                 }
-            },
-            "networkProfile": {
-                "networkInterfaces": [
-                    {
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-                    }
-                ]
             }
-        },
-        "resources": [
-            {
-                "name": "mydcs",
-                "type": "extensions",
-                "location": "[resourceGroup().location]",
-                "apiVersion": "[variables('vmApiVersion')]",
-                "dependsOn": [
-                    "[resourceId('Microsoft.Compute/virtualMachines/', variables('labVmName'))]"
-                ],
-                "tags": {
-                    "displayName": "mydcs"
-                },
-                "properties": {
-                    "publisher": "Microsoft.Powershell",
-                    "type": "DSC",
-                    "typeHandlerVersion": "2.9",
-                    "autoUpgradeMinorVersion": true,
-                    "settings": {
-                        "modulesUrl": "[variables('dscModuleUrl')]",
-                        "sasToken": "",
-                        "configurationFunction": "[variables('mydcsConfigurationFunction')]",
-                        "properties": {
-                            "nodeName": "[variables('labVmName')]",
-                            "PBIDLink": "http://go.microsoft.com/fwlink/?LinkID=521662",
-                            "PBIDProductId": "D63D02FE-31C8-4470-A3D4-5FBE6BDC091F"
-                        }
-                    },
-                    "protectedSettings": {}
-                }
-            }
-        ]
+        }
     }
   ],
     "outputs": {}
