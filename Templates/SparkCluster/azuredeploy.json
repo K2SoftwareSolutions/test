@@ -1,104 +1,71 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "labVmUserName": {
-            "type": "string",
-            "defaultValue": "demouser",
-            "metadata": {
-                "description": "These credentials can be used to log into the Lab VM."
-            }
-        },
-        "labVmPassword": {
-            "type": "securestring",
-            "defaultValue": "Password.1!!",
-            "metadata": {
-                "description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
-            }
-        }
-    },
-  "variables": {
-    "cleanAppName": "contosodevtestlabs",
-    "vmStorageAccountName": "[concat(variables('cleanAppName'), 'vmstorage')]",
-    "labVmName": "[concat(variables('cleanAppName'), 'lab')]",
-    "networkingApiVersion": "2015-06-15",
-    "OSDiskName": "labvmosdisk",
-    "vmOsVersion": "2016-Datacenter",
-    "vmSize": "Standard_DS2_v2",
-    "publicIPAddressType": "Dynamic",
-    "imagePublisher": "MicrosoftWindowsServer",
-    "imageOffer": "WindowsServer",
-    "vmApiVersion": "2015-06-15",
-    "mydcsConfigurationFunction": "mydcsConfiguration.ps1\\Main",
-    "dscModuleUrl": "https://raw.github.com/toddkitta/CortanaIntelligenceWorkshopPrereqDeployment/master/dsc.zip",
-    "storageApiVersion": "2016-01-01"
-  },
-  "resources": [
-    {
-        "name": "[variables('vmStorageAccountName')]",
-        "type": "Microsoft.Storage/storageAccounts",
-        "location": "[resourceGroup().location]",
-        "apiVersion": "[variables('storageApiVersion')]",
-        "sku": {
-          "name": "Standard_LRS",
-          "tier": "Standard"
-        },
-        "dependsOn": [],
-        "tags": {
-          "displayname": "vmattachedstorage"
-         },
-        "kind": "Storage"
+      "newVMName": {
+        "type": "string",
+        "defaultValue": "evm"
       },
-      {
-        "type": "Microsoft.Network/publicIPAddresses",
-        "name": "[variables('publicIPAddressName')]",
-        "location": "[resourceGroup().location]",
-        "apiVersion": "[variables('networkingApiVersion')]",
-        "properties": {
-            "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
-            "dnsSettings": {
-                "domainNameLabel": "[variables('labVmName')]"
-            }
-        }
+      "labName": {
+        "type": "string",
+        "defaultValue": "load6"
+      },
+      "size": {
+        "type": "string",
+        "defaultValue": "Standard_A0"
+      },
+      "userName": {
+        "type": "string",
+        "defaultValue": "vsadmin"
+      },
+      "password": {
+        "type": "securestring"
+      }
     },
-    {
-        "name": "[variables('labVmName')]",
-        "type": "Microsoft.Compute/virtualMachines",
+    "variables": {
+      "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
+      "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
+      "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
+      "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
+    },
+    "resources": [
+      {
+        "apiVersion": "2016-05-15",
+        "type": "Microsoft.DevTestLab/labs/virtualmachines",
+        "name": "[concat(variables('vmName'), '-', copyIndex())]",
         "location": "[resourceGroup().location]",
-        "apiVersion": "[variables('vmApiVersion')]",
-        "dependsOn": [
-            "[concat('Microsoft.Storage/storageAccounts/', variables('vmStorageAccountName'))]"
-        ],
+        "copy": {
+            "name": "labvmcopy",
+            "count": 100
+          },
         "properties": {
-            "hardwareProfile": {
-                "vmSize": "[variables('vmSize')]"
-            },
-            "osProfile": {
-                "computerName": "[variables('labVmName')]",
-                "adminUsername": "[parameters('labVmUserName')]",
-                "adminPassword": "[parameters('labVmPassword')]",
-                "windowsConfiguration": {
-                    "provisionVmAgent": "true"
-                }
-            },
-            "storageProfile": {
-                "imageReference": {
-                    "publisher": "[variables('imagePublisher')]",
-                    "offer": "[variables('imageOffer')]",
-                    "sku": "[variables('vmOsVersion')]",
-                    "version": "latest"
-                },
-                "osDisk": {
-                    "name": "osdisk",
-                    "vhd": {
-                        "uri": "[concat('http://', variables('vmStorageAccountName'), '.blob.core.windows.net/vmstorage/', variables('OSDiskName'), '.vhd')]"
-                    },
-                    "caching": "ReadWrite",
-                    "createOption": "FromImage"
-                }
-            }
+          "labVirtualNetworkId": "[variables('labVirtualNetworkId')]",
+          "notes": "Debian 8 \"Jessie\"",
+          "galleryImageReference": {
+            "offer": "Debian",
+            "publisher": "credativ",
+            "sku": "8",
+            "osType": "Linux",
+            "version": "latest"
+          },
+          "size": "[parameters('size')]",
+          "userName": "[parameters('userName')]",
+          "password": "[parameters('password')]",
+          "isAuthenticationWithSshKey": false,
+          "labSubnetName": "[variables('labSubnetName')]",
+          "disallowPublicIpAddress": true,
+          "networkInterface": {
+            "sharedPublicIpAddressConfiguration": {
+                "inboundNatRules": [
+                  {
+                    "transportProtocol": "tcp",
+                    "backendPort": 22
+                  }
+                ]
+              }          
+          },
+          "storageType": "Standard" 
         }
-    }
-  ],
-    "outputs": {}
-}
+      }
+    ]
+  }
