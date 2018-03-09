@@ -33,9 +33,7 @@
         "storageAccountName": "[concat(variables('cleanVmName'), 'vmstorage')]",
         "subnetName": "default",
         "publicIpAddressName": "[concat(variables('cleanVmName'), 'publicip')]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
-        "mydcsConfigurationFunction": "mydcsConfiguration.ps1\\Main",
-        "dscModuleUrl": "https://raw.githubusercontent.com/K2SoftwareSolutions/test/master/PreDeployment/dsc.zip"
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]"
     },
     "resources": [
         {
@@ -84,38 +82,7 @@
                     ]
                 },
                 "licenseType": "Windows_Client"
-            },
-            "resources": [
-              {
-                "name": "mydcs",
-                "type": "extensions",
-                "location": "[resourceGroup().location]",
-                "apiVersion": "2017-03-30",
-                "dependsOn": [
-                  "[resourceId('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-                ],
-                "tags": {
-                  "displayName": "mydcs"
-                },
-                "properties": {
-                  "publisher": "Microsoft.Powershell",
-                  "type": "DSC",
-                  "typeHandlerVersion": "2.9",
-                  "autoUpgradeMinorVersion": true,
-                  "settings": {
-                    "modulesUrl": "[variables('dscModuleUrl')]",
-                    "sasToken": "",
-                    "configurationFunction": "[variables('mydcsConfigurationFunction')]",
-                    "properties": {
-                      "nodeName": "[parameters('vmName')]",
-                      "PBIDLink": "http://go.microsoft.com/fwlink/?LinkID=521662",
-                      "PBIDProductId": "D63D02FE-31C8-4470-A3D4-5FBE6BDC091F"
-                    }
-                  },
-                  "protectedSettings": {}
-                }
-              }
-            ]
+            }
         },
         {
             "name": "[variables('storageAccountName')]",
